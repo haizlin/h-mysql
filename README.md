@@ -1,8 +1,7 @@
 # h-mysql
 
 * **作者**：浪子神剑
-* **邮箱**：<80285586@qq.com> 
-* **网站**：[http://www.haizlin.com](http://www.haizlin.com)
+* **网站**：[访问项目github地址](https://github.com/haizlin/h-mysql)
 * **介绍**：一直以来很喜欢Thinkphp的数据操作风格，所以在nodejs上也封装了一个MYSQL数据库的常用操作，支持链式调用，实现语义化的数据库操作。
 
 ## 安装及引用
@@ -114,7 +113,15 @@ hMysql.table()
 * v1.0.0
   * 实现常用方法的链式调用，未经过测试，慎用到生产环境，待更新到完善
 
+## 项目骨干
+- [qq674785876](https://github.com/qq674785876)
+- [undefinedYu](https://github.com/undefinedYu)
+- [qingleizhang123](https://github.com/qingleizhang123)
+- [yxkhaha](https://github.com/yxkhaha)
+- [zhaoqian0901](https://github.com/zhaoqian0901)
+
 ## 贡献
+欢迎大家到 [Issues](https://github.com/haizlin/h-mysql/issues) 交流或通过提交**PR**的形式对本项目进行贡献
 
 ## License
 [![MIT](http://api.haizlin.cn/api?mod=interview&ctr=issues&act=generateSVG&type=h-mysql)](https://github.com/haizlin/h-mysql/LICENSE)
