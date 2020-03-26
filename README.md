@@ -1,6 +1,5 @@
 # h-mysql
 
-* **作者**：浪子神剑
 * **网站**：[访问项目github地址](https://github.com/haizlin/h-mysql)
 * **介绍**：一直以来很喜欢Thinkphp的数据操作风格，所以在nodejs上也封装了一个MYSQL数据库的常用操作，支持链式调用，实现语义化的数据库操作。
 
@@ -27,9 +26,9 @@ const hMysql = new mysql({
   port: 3306,
 
   acquireTimeout: 1000,
-  waitForConnections: true,    //是否等待链接  
-  connectionLimit: 10,  // 连接池数
-  queueLimit: 0, // 排队限制 
+  waitForConnections: true,     //是否等待链接  
+  connectionLimit: 10,          // 连接池数
+  queueLimit: 0,                // 排队限制 
 
   defaultSqlPre: '',
   isPool: true,
@@ -103,7 +102,7 @@ hMysql.table()
 - [ ] 支持更复杂的链式操作
 - [ ] 添加测试用例
 - [ ] 重写异常处理方式
-- [ ] 添加性能测试并添加每条语句执行的时间
+- [ ] 添加性能测试、性能优化并添加每条语句执行的时间
 - [ ] 添加安全测试，防注入
 - [ ] 增加对数据库的操作（现在的功能都是针对表）
 - [ ] 考虑是不是要支持ORM
