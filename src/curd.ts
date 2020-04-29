@@ -1,7 +1,7 @@
 import {
     sortSelectSql,
     checkType,
-    handleInsertData,
+    insertData,
     isEmptyObj
 } from './uitl'
 import { conf, sqlObj } from './type/interface';
@@ -101,6 +101,8 @@ export default class Curd {
             datastr += `${item}='${checkType(newData[item], item)}'` + ((index === keys.length - 1) ? ' ' : ',');
         })
 
+        console.log(22, datastr)
+
         result = `UPDATE ${this.sqlObj.table} SET ${datastr} WHERE ${this.sqlObj.where}`
         // const sqlStr = result.replace(/'/g, '\'').replace(/`/g, '\'');
         const sqlStr = result.replace(/'/g, '\'');
@@ -109,29 +111,17 @@ export default class Curd {
     }
 
     /**
-     * 批量更新
-     */
-    updateMany() {
-        this.sqlObj.queryType = 'updateMany';
-    }
-
-    /**
      * 添加
      */
     insert() {
         this.sqlObj.queryType = 'insert';
         let newData = this.sqlObj.data || {};
-        const datastr = handleInsertData(newData);
+        const datastr = insertData(newData);
         let result = `INSERT INTO ${this.sqlObj.table} ${datastr}`
         const sqlStr = result.replace(/'/g, '\'')
 
         this.sqlObj.sqlStr = sqlStr;
         return this;
-    }
-
-    // 批量插入
-    insertMany(list: any[], type: boolean = false) {
-
     }
 
     /**

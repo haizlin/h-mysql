@@ -1,6 +1,6 @@
 /**
- * h-tools v1.0.0
- * (c) 2018-2020 haizlin https://github.com/haizlin/h-tools
+ * h-mysql v1.0.3
+ * (c) 2018-2020 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
  */
@@ -92,6 +92,7 @@ function checkType(opt, key) {
     result = opt.trim();
   }
 
+  console.log(11, result);
   return result;
 }
 function checkObjType(pre_key, val) {
@@ -260,12 +261,13 @@ function sortArray(data) {
   return result;
 }
 
-function handleInsertData(data) {
+function insertData(data) {
   if (!data) return '';
   if (Array.isArray(data) && data.length === 1) data = data[0];
   let keys = '';
   let values = '';
   let datastr = '';
+  console.log(33, data);
 
   if (Array.isArray(data)) {
     data = sortArray(data);
@@ -831,27 +833,22 @@ class Curd {
     keys.forEach((item, index) => {
       datastr += `${item}='${checkType(newData[item], item)}'` + (index === keys.length - 1 ? ' ' : ',');
     });
+    console.log(22, datastr);
     result = `UPDATE ${this.sqlObj.table} SET ${datastr} WHERE ${this.sqlObj.where}`;
     const sqlStr = result.replace(/'/g, '\'');
     this.sqlObj.sqlStr = sqlStr;
     return this;
   }
 
-  updateMany() {
-    this.sqlObj.queryType = 'updateMany';
-  }
-
   insert() {
     this.sqlObj.queryType = 'insert';
     let newData = this.sqlObj.data || {};
-    const datastr = handleInsertData(newData);
+    const datastr = insertData(newData);
     let result = `INSERT INTO ${this.sqlObj.table} ${datastr}`;
     const sqlStr = result.replace(/'/g, '\'');
     this.sqlObj.sqlStr = sqlStr;
     return this;
   }
-
-  insertMany(list, type = false) {}
 
   delete() {
     if (isEmptyObj(this.sqlObj.where) || this.sqlObj.where === '') {

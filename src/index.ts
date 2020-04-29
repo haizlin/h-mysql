@@ -30,7 +30,7 @@ function getConfig(config:conf){
 }
 
 export default class hMysql extends mixin(Core, Base, Curd, Database) {
-    constructor(config){
+    constructor(config:conf){
         let conf = getConfig(config);
 
         super(conf);

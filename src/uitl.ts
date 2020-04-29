@@ -84,7 +84,7 @@ export function checkType(opt: any, key?: string) {
 
     if (isType(opt, 'string')) {
         // opt = sqlstring.escape(opt.trim());
-        opt = opt.trim();
+        opt = opt.trim(); 
 
         result = opt.indexOf(key) > -1 && opt.match(/\+|-|\*|\/|%/) ? opt.slice(1, -1) : opt;
     } else if (isType(opt, 'boolean') || isType(opt, 'number')) {
@@ -93,6 +93,8 @@ export function checkType(opt: any, key?: string) {
         // result = sqlstring.escape(opt);
         result = opt.trim();
     }
+
+    console.log(11, result)
 
     return result
 }
@@ -265,13 +267,15 @@ function sortArray(data: any[]) {
 }
 
 // 处理insert批量插入data参数
-export function handleInsertData(data: any) {
+export function insertData(data: any) {
     if (!data) return '';
     if (Array.isArray(data) && data.length === 1) data = data[0];
 
     let keys = ''
     let values = ''
     let datastr = ''
+
+    console.log(33, data)
 
     if (Array.isArray(data)) {
         // array

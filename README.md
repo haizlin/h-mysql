@@ -63,8 +63,8 @@ hMysql.table()
 
 ## [API 文档](./docs/api.md)
 * CURD操作
-  * [.select()]() ⇒ Promise
   * [.find()]() ⇒ Promise
+  * [.select()]() ⇒ Promise
   * [.update()]() ⇒ Promise
   * [.updateMany()]() ⇒ Promise
   * [.insert()]() ⇒ Promise
