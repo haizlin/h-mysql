@@ -94,8 +94,6 @@ export function checkType(opt: any, key?: string) {
         result = opt.trim();
     }
 
-    console.log(11, result)
-
     return result
 }
 

@@ -92,7 +92,6 @@ function checkType(opt, key) {
     result = opt.trim();
   }
 
-  console.log(11, result);
   return result;
 }
 function checkObjType(pre_key, val) {
