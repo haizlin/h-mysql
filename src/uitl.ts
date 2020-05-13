@@ -91,7 +91,11 @@ export function checkType(opt: any, key?: string) {
         result = opt
     } else {
         // result = sqlstring.escape(opt);
-        result = opt.trim();
+        if (isType(opt, 'string')) {
+            result = opt.trim();
+        }else{
+            result = opt;
+        }
     }
 
     return result
@@ -272,8 +276,6 @@ export function insertData(data: any) {
     let keys = ''
     let values = ''
     let datastr = ''
-
-    console.log(33, data)
 
     if (Array.isArray(data)) {
         // array

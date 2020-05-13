@@ -1,5 +1,5 @@
 /**
- * h-mysql v1.0.3
+ * h-mysql v1.0.4
  * (c) 2018-2020 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
@@ -89,7 +89,11 @@ function checkType(opt, key) {
   } else if (isType(opt, 'boolean') || isType(opt, 'number')) {
     result = opt;
   } else {
-    result = opt.trim();
+    if (isType(opt, 'string')) {
+      result = opt.trim();
+    } else {
+      result = opt;
+    }
   }
 
   return result;
@@ -266,7 +270,6 @@ function insertData(data) {
   let keys = '';
   let values = '';
   let datastr = '';
-  console.log(33, data);
 
   if (Array.isArray(data)) {
     data = sortArray(data);
