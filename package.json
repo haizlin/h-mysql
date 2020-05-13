@@ -1,6 +1,6 @@
 {
   "name": "h-mysql",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "一直以来很喜欢Thinkphp的数据操作风格，所以在nodejs上也封装了一个MYSQL数据库的常用操作，支持链式调用，实现语义化的数据库操作。",
   "main": "./dist/h-mysql.js",
   "scripts": {
