@@ -203,6 +203,9 @@ export function expressionQuery(par_key: string, mark: string, value: any, _type
         case 'ISNULL':
             result = `(${par_key} IS NULL )`
             break;
+        case 'ISNOTNULL':
+                result = `(${par_key} IS NOT NULL )`
+                break;
         default:
             result = `(${par_key}=${checkType(value)})`
     }

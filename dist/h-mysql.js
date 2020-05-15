@@ -1,5 +1,5 @@
 /**
- * h-mysql v1.0.4
+ * h-mysql v1.0.5
  * (c) 2018-2020 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
@@ -203,6 +203,10 @@ function expressionQuery(par_key, mark, value, _type, isLastOne) {
 
     case 'ISNULL':
       result = `(${par_key} IS NULL )`;
+      break;
+
+    case 'ISNOTNULL':
+      result = `(${par_key} IS NOT NULL )`;
       break;
 
     default:
