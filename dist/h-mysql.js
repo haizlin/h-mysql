@@ -1,5 +1,5 @@
 /**
- * h-mysql v1.0.5
+ * h-mysql v1.0.6
  * (c) 2018-2020 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
@@ -490,30 +490,37 @@ class Core {
         return false;
       }
 
-      _this.connection.query(sqlstring, (error, result, fields) => {
-        if (error) {
-          reject(error);
-        } else {
-          let r;
-          let err = error === null ? 0 : error;
-
-          if (isSingle) {
-            r = result.length > 0 ? result[0] : {};
-          } else {
-            r = result;
-          }
-
-          if (isCount) {
-            r = result[0]['total'] || 0;
-          }
-
-          resolve({
-            error: err,
-            result: r
-          });
+      _this.connection.getConnection((err, connection) => {
+        if (err) {
+          resolve(err);
+          return;
         }
 
-        if (!_this.config.isPool && !type) _this.connection.end();
+        connection.query(sqlstring, (error, result, fields) => {
+          if (error) {
+            reject(error);
+          } else {
+            let r;
+            let err = error === null ? 0 : error;
+
+            if (isSingle) {
+              r = result.length > 0 ? result[0] : {};
+            } else {
+              r = result;
+            }
+
+            if (isCount) {
+              r = result[0]['total'] || 0;
+            }
+
+            resolve({
+              error: err,
+              result: r
+            });
+          }
+
+          connection.release();
+        });
       });
     });
   }

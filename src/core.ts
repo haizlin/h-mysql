@@ -8,7 +8,7 @@ export default class Core {
     sqlObj: sqlObj = {};
     tempObj: tempObj = {};
 
-    constructor(config:conf) {
+    constructor(config: conf) {
         this.config = config;
         this.connect()
     }
@@ -71,27 +71,59 @@ export default class Core {
                 return false;
             }
 
-            _this.connection.query(sqlstring, (error: any, result: any, fields: any) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    let r: any;
-                    let err: any = error === null ? 0 : error;
+            // _this.connection.query(sqlstring, (error: any, result: any, fields: any) => {
+            //     if (error) {
+            //         reject(error);
+            //     } else {
+            //         let r: any;
+            //         let err: any = error === null ? 0 : error;
 
-                    if (isSingle) {
-                        r = result.length > 0 ? result[0] : {};
-                    } else {
-                        r = result;
-                    }
+            //         if (isSingle) {
+            //             r = result.length > 0 ? result[0] : {};
+            //         } else {
+            //             r = result;
+            //         }
 
-                    if (isCount) {
-                        r = result[0]['total'] || 0;
-                    }
+            //         if (isCount) {
+            //             r = result[0]['total'] || 0;
+            //         }
 
-                    resolve({ error: err, result: r });
+            //         resolve({ error: err, result: r });
+            //     }
+
+            //     if (!_this.config.isPool && !type) _this.connection.end();
+            // });
+
+            _this.connection.getConnection((err, connection) => {
+                if(err){
+                    resolve(err);
+                    return;
                 }
 
-                if (!_this.config.isPool && !type) _this.connection.end();
+                connection.query(sqlstring, (error: any, result: any, fields: any) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        let r: any;
+                        let err: any = error === null ? 0 : error;
+
+                        if (isSingle) {
+                            r = result.length > 0 ? result[0] : {};
+                        } else {
+                            r = result;
+                        }
+
+                        if (isCount) {
+                            r = result[0]['total'] || 0;
+                        }
+
+                        resolve({ error: err, result: r });
+                    }
+
+                    connection.release();
+                    // connection.destroy();
+                    // if (!_this.config.isPool && !type) _this.connection.end();
+                });
             });
         })
     }
