@@ -19,10 +19,10 @@ export default class Core {
     connect() {
         let conf = this.config;
 
-        this.poolEvent();
-
         if (conf.isPool) {
             this.connection = mysql.createPool(conf);
+
+            this.poolEvent();
         } else {
             this.connection = mysql.createConnection(conf);
         }
@@ -101,6 +101,10 @@ export default class Core {
                 }
 
                 connection.query(sqlstring, (error: any, result: any, fields: any) => {
+                    // _this.connection.releaseConnection(connection); // 释放连接
+                    connection.release();
+                    // connection.releaseConnection(); // 释放连接
+
                     if (error) {
                         reject(error);
                     } else {
@@ -116,11 +120,12 @@ export default class Core {
                         if (isCount) {
                             r = result[0]['total'] || 0;
                         }
-
+                        
                         resolve({ error: err, result: r });
                     }
-
-                    connection.release();
+                    
+                    // connection.destroy();
+                    
                     // connection.destroy();
                     // if (!_this.config.isPool && !type) _this.connection.end();
                 });

@@ -1,6 +1,6 @@
 /**
  * h-mysql v1.0.6
- * (c) 2018-2020 haizlin https://github.com/haizlin/h-mysql
+ * (c) 2018-2021 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
  */
@@ -452,10 +452,10 @@ class Core {
 
   connect() {
     let conf = this.config;
-    this.poolEvent();
 
     if (conf.isPool) {
       this.connection = mysql.createPool(conf);
+      this.poolEvent();
     } else {
       this.connection = mysql.createConnection(conf);
     }
@@ -497,6 +497,8 @@ class Core {
         }
 
         connection.query(sqlstring, (error, result, fields) => {
+          connection.release();
+
           if (error) {
             reject(error);
           } else {
@@ -518,8 +520,6 @@ class Core {
               result: r
             });
           }
-
-          connection.release();
         });
       });
     });
@@ -892,7 +892,7 @@ function getConfig(config) {
     database: 'test',
     acquireTimeout: 10000,
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: 3,
     queueLimit: 0,
     isPool: true,
     defaultSqlPre: '',
