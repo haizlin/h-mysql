@@ -77,18 +77,27 @@ export default class Base {
      * 设置数据,用在update和insert
      * @param data 
      */
-    data(data: string | object) {
-        let newData: object = {}
+    data(data: string | object | any[]) {
+        let newData: any
 
         if (typeof (data) === 'string') {
             let arr = data.split('&')
             arr.forEach(item => {
                 let itemArr = item.split('=')
-                newData[itemArr[0]] = itemArr[1]
+                newData[itemArr[0]] = mysql.escape(itemArr[1])
             })
-        } else {
+        } else if(isType(data, 'object')) {
+            newData = {};
             for(let i in data){
                 newData[i] = mysql.escape(data[i]);
+            }
+        } else if(isType(data, 'array')){
+            newData = [];
+            for(let i = 0; i < data.length; i++){
+                for(let j in data[i]){
+                    newData[i] = newData[i] ? newData[i] : {};
+                    newData[i][j] = mysql.escape(data[i][j]);
+                }
             }
         }
         this.sqlObj.data = newData

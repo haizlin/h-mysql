@@ -466,7 +466,7 @@ export function isEmptyObj(obj: object) {
     return true;
 }
 
-export function isType(str: string, type: string) {
+export function isType(str: any, type: string) {
     return (Object.prototype.toString.call(str).slice(8, -1)).toLocaleLowerCase() === type.toLocaleLowerCase();
 }
 

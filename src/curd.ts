@@ -117,8 +117,7 @@ export default class Curd {
         let newData = this.sqlObj.data || {};
         const datastr = insertData(newData);
         let result = `INSERT INTO ${this.sqlObj.table} ${datastr}`
-        // const sqlStr = result.replace(/'/g, '\'')
-
+        
         this.sqlObj.sqlStr = result;
         return this;
     }

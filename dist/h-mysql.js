@@ -1,5 +1,5 @@
 /**
- * h-mysql v1.0.7
+ * h-mysql v1.0.8
  * (c) 2018-2021 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
@@ -629,17 +629,28 @@ class Base {
   }
 
   data(data) {
-    let newData = {};
+    let newData;
 
     if (typeof data === 'string') {
       let arr = data.split('&');
       arr.forEach(item => {
         let itemArr = item.split('=');
-        newData[itemArr[0]] = itemArr[1];
+        newData[itemArr[0]] = mysql$2.escape(itemArr[1]);
       });
-    } else {
+    } else if (isType(data, 'object')) {
+      newData = {};
+
       for (let i in data) {
         newData[i] = mysql$2.escape(data[i]);
+      }
+    } else if (isType(data, 'array')) {
+      newData = [];
+
+      for (let i = 0; i < data.length; i++) {
+        for (let j in data[i]) {
+          newData[i] = newData[i] ? newData[i] : {};
+          newData[i][j] = mysql$2.escape(data[i][j]);
+        }
       }
     }
 
