@@ -1,11 +1,13 @@
 /**
- * h-mysql v1.0.6
+ * h-mysql v1.0.7
  * (c) 2018-2021 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
  */
 
 'use strict';
+
+const mysql = require('mysql');
 
 function formatDate(fmt, date) {
   let ret;
@@ -41,7 +43,7 @@ function getWhereToString(opt) {
       if (isType(opt[item], 'object')) {
         result += `${checkObjType(item, opt[item])}` + (index === keys.length - 1 - number ? ' ' : ` ${_type} `);
       } else {
-        result += `${item}='${checkType(opt[item])}'` + (index === keys.length - 1 - number ? ' ' : ` ${_type} `);
+        result += `${item}=${mysql.escape(checkType(opt[item]))}` + (index === keys.length - 1 - number ? ' ' : ` ${_type} `);
       }
     });
   } else if (isType(opt, 'array')) {
@@ -69,7 +71,7 @@ function getWhereToString(opt) {
           if (isType(item[chi_item], 'object')) {
             result1 = `${checkObjType(chi_item, item[chi_item])}`;
           } else {
-            result1 = `${chi_item}=${checkType(item[chi_item])} `;
+            result1 = `${chi_item}=${mysql.escape(checkType(item[chi_item]))} `;
           }
         }
       });
@@ -283,7 +285,8 @@ function insertData(data) {
       let items = '';
 
       for (let key in data[i]) {
-        items = items ? `${items},'${checkType(data[i][key])}'` : `'${checkType(data[i][key])}'`;
+        let v = checkType(data[i][key]);
+        items = items ? `${items},${v}` : `${v}`;
       }
 
       values += `(${items}),`;
@@ -292,8 +295,9 @@ function insertData(data) {
     values = values.slice(0, -1);
   } else {
     for (let key in data) {
+      let v = checkType(data[key]);
       keys = keys ? `${keys},\`${key}\`` : `\`${key}\``;
-      values = values ? `${values}, '${checkType(data[key])}'` : `'${checkType(data[key])}'`;
+      values = values ? `${values}, ${v}` : `${v}`;
     }
 
     values = `(${values})`;
@@ -439,7 +443,7 @@ function formatJoin(join, tableAlias, tableName) {
   return joinStr;
 }
 
-const mysql = require('mysql');
+const mysql$1 = require('mysql');
 
 class Core {
   constructor(config) {
@@ -454,10 +458,10 @@ class Core {
     let conf = this.config;
 
     if (conf.isPool) {
-      this.connection = mysql.createPool(conf);
+      this.connection = mysql$1.createPool(conf);
       this.poolEvent();
     } else {
-      this.connection = mysql.createConnection(conf);
+      this.connection = mysql$1.createConnection(conf);
     }
   }
 
@@ -492,6 +496,7 @@ class Core {
 
       _this.connection.getConnection((err, connection) => {
         if (err) {
+          console.log('mysql error:', err);
           resolve(err);
           return;
         }
@@ -568,6 +573,8 @@ class Core {
 
 }
 
+const mysql$2 = require('mysql');
+
 class Base {
   constructor(config) {
     this.sqlObj = {};
@@ -612,7 +619,7 @@ class Base {
     let result = '';
 
     if (typeof opt === 'string') {
-      result = opt;
+      result = mysql$2.escape(opt);
     } else {
       result = getWhereToString(opt);
     }
@@ -631,7 +638,9 @@ class Base {
         newData[itemArr[0]] = itemArr[1];
       });
     } else {
-      newData = data;
+      for (let i in data) {
+        newData[i] = mysql$2.escape(data[i]);
+      }
     }
 
     this.sqlObj.data = newData;
@@ -844,12 +853,10 @@ class Curd {
 
     let keys = Object.keys(newData);
     keys.forEach((item, index) => {
-      datastr += `${item}='${checkType(newData[item], item)}'` + (index === keys.length - 1 ? ' ' : ',');
+      datastr += `${item}=${checkType(newData[item], item)}` + (index === keys.length - 1 ? ' ' : ',');
     });
-    console.log(22, datastr);
     result = `UPDATE ${this.sqlObj.table} SET ${datastr} WHERE ${this.sqlObj.where}`;
-    const sqlStr = result.replace(/'/g, '\'');
-    this.sqlObj.sqlStr = sqlStr;
+    this.sqlObj.sqlStr = result;
     return this;
   }
 
@@ -858,8 +865,7 @@ class Curd {
     let newData = this.sqlObj.data || {};
     const datastr = insertData(newData);
     let result = `INSERT INTO ${this.sqlObj.table} ${datastr}`;
-    const sqlStr = result.replace(/'/g, '\'');
-    this.sqlObj.sqlStr = sqlStr;
+    this.sqlObj.sqlStr = result;
     return this;
   }
 
@@ -892,7 +898,7 @@ function getConfig(config) {
     database: 'test',
     acquireTimeout: 10000,
     waitForConnections: true,
-    connectionLimit: 3,
+    connectionLimit: 10,
     queueLimit: 0,
     isPool: true,
     defaultSqlPre: '',

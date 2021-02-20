@@ -1,5 +1,6 @@
 import sqlstring from 'sqlstring'
 import { sqlObj } from './type/interface';
+const mysql = require('mysql');
 
 // 时间格式化
 export function formatDate(fmt: string, date: any) {
@@ -38,7 +39,7 @@ export function getWhereToString(opt: any) {
             if (isType(opt[item], 'object')) {
                 result += `${checkObjType(item, opt[item])}` + ((index === keys.length - 1 - number) ? ' ' : ` ${_type} `);
             } else {
-                result += `${item}='${checkType(opt[item])}'` + ((index === keys.length - 1 - number) ? ' ' : ` ${_type} `)
+                result += `${item}=${mysql.escape(checkType(opt[item]))}` + ((index === keys.length - 1 - number) ? ' ' : ` ${_type} `)
             }
         })
     } else if (isType(opt, 'array')) {
@@ -63,7 +64,7 @@ export function getWhereToString(opt: any) {
                     if (isType(item[chi_item], 'object')) {
                         result1 = `${checkObjType(chi_item, item[chi_item])}`
                     } else {
-                        result1 = `${chi_item}=${checkType(item[chi_item])} `
+                        result1 = `${chi_item}=${mysql.escape(checkType(item[chi_item]))} `
                     }
                 }
             })
@@ -288,20 +289,22 @@ export function insertData(data: any) {
         for (let i = 0; i < data.length; i++) {
             let items = ''
             for (let key in data[i]) {
-                items = items ? `${items},'${checkType(data[i][key])}'` : `'${checkType(data[i][key])}'`
+                let v = checkType(data[i][key])
+                items = items ? `${items},${v}` : `${v}`
             }
             values += `(${items}),`
         }
         values = values.slice(0, -1)
     } else {
-        // object
         for (let key in data) {
+            let v = checkType(data[key]);
+
             keys = keys ? `${keys},\`${key}\`` : `\`${key}\``
-            values = values ? `${values}, '${checkType(data[key])}'` : `'${checkType(data[key])}'`
+            values = values ? `${values}, ${v}` : `${v}`
         }
         values = `(${values})`;
     }
-    datastr = `(${keys}) VALUES ${values}`
+    datastr = `(${keys}) VALUES ${values}`;
     return datastr;
 }
 

@@ -17,6 +17,7 @@ export default class Core {
      * 数据库连接
      */
     connect() {
+        
         let conf = this.config;
 
         if (conf.isPool) {
@@ -47,6 +48,7 @@ export default class Core {
     }
 
     async execSql(isDebug: boolean = false, type: boolean = false) {
+        
         let _this = this;
         let sqlstring: string = '';
         let isSingle = this.sqlObj.queryType === 'find'; // 是否是单条
@@ -96,6 +98,7 @@ export default class Core {
 
             _this.connection.getConnection((err, connection) => {
                 if(err){
+                    console.log('mysql error:', err)
                     resolve(err);
                     return;
                 }
@@ -104,7 +107,6 @@ export default class Core {
                     // _this.connection.releaseConnection(connection); // 释放连接
                     connection.release();
                     // connection.releaseConnection(); // 释放连接
-
                     if (error) {
                         reject(error);
                     } else {

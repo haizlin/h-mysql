@@ -1,5 +1,6 @@
-import { getWhereToString, formatJoin } from './uitl.js'
+import { getWhereToString, formatJoin, isType } from './uitl.js'
 import { conf, sqlObj } from './type/interface';
+const mysql = require('mysql');
 
 export default class Base {
     config: conf;
@@ -60,11 +61,11 @@ export default class Base {
      * @param str
      * 
      */
-    where(opt: string | any[]) {
+    where(opt: string | any[] | object) {
         let result: string = ''
 
         if (typeof (opt) === 'string') {
-            result = opt
+            result = mysql.escape(opt)
         } else {
             result = getWhereToString(opt)
         }
@@ -86,7 +87,9 @@ export default class Base {
                 newData[itemArr[0]] = itemArr[1]
             })
         } else {
-            newData = data
+            for(let i in data){
+                newData[i] = mysql.escape(data[i]);
+            }
         }
         this.sqlObj.data = newData
         return this

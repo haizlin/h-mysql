@@ -32,13 +32,14 @@ export default class Curd {
             return result
         }
 
-        let newSqlObj = sortSelectSql(this.sqlObj)
+        let newSqlObj = sortSelectSql(this.sqlObj);
 
         newSqlObj.sortkeys.forEach(item => {
             if (newSqlObj.result[item]) {
                 result = `${result} ${newSqlObj.result[item]}`
             }
         })
+
         const sqlStr = `SELECT ${result.replace(/'/g, '\'')} `;
 
         this.sqlObj.sqlStr = sqlStr;
@@ -98,15 +99,13 @@ export default class Curd {
         // }
 
         keys.forEach((item, index) => {
-            datastr += `${item}='${checkType(newData[item], item)}'` + ((index === keys.length - 1) ? ' ' : ',');
+            datastr += `${item}=${checkType(newData[item], item)}` + ((index === keys.length - 1) ? ' ' : ',');
         })
-
-        console.log(22, datastr)
 
         result = `UPDATE ${this.sqlObj.table} SET ${datastr} WHERE ${this.sqlObj.where}`
         // const sqlStr = result.replace(/'/g, '\'').replace(/`/g, '\'');
-        const sqlStr = result.replace(/'/g, '\'');
-        this.sqlObj.sqlStr = sqlStr;
+        // const sqlStr = result.replace(/'/g, '\'');
+        this.sqlObj.sqlStr = result;
         return this;
     }
 
@@ -118,9 +117,9 @@ export default class Curd {
         let newData = this.sqlObj.data || {};
         const datastr = insertData(newData);
         let result = `INSERT INTO ${this.sqlObj.table} ${datastr}`
-        const sqlStr = result.replace(/'/g, '\'')
+        // const sqlStr = result.replace(/'/g, '\'')
 
-        this.sqlObj.sqlStr = sqlStr;
+        this.sqlObj.sqlStr = result;
         return this;
     }
 
