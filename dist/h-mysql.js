@@ -1,5 +1,5 @@
 /**
- * h-mysql v1.0.8
+ * h-mysql v1.0.9
  * (c) 2018-2021 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
@@ -886,7 +886,9 @@ class Curd {
     }
 
     this.sqlObj.queryType = 'delete';
-    let result = `DELETE FROM ${this.sqlObj.table} WHERE ${this.sqlObj.where}`;
+    let order = this.sqlObj.order ? this.sqlObj.order : '';
+    let limit = this.sqlObj.limit ? this.sqlObj.limit : '';
+    let result = `DELETE FROM ${this.sqlObj.table} WHERE ${this.sqlObj.where} ${order} ${limit}`;
     const sqlStr = result.replace(/'/g, '\'');
     this.sqlObj.sqlStr = sqlStr;
     return this;

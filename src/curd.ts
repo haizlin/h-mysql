@@ -132,7 +132,10 @@ export default class Curd {
         }
 
         this.sqlObj.queryType = 'delete';
-        let result = `DELETE FROM ${this.sqlObj.table} WHERE ${this.sqlObj.where}`
+        let order = this.sqlObj.order ? this.sqlObj.order : ''; 
+        let limit = this.sqlObj.limit ? this.sqlObj.limit : '';
+
+        let result = `DELETE FROM ${this.sqlObj.table} WHERE ${this.sqlObj.where} ${order} ${limit}`
         const sqlStr = result.replace(/'/g, '\'')
         this.sqlObj.sqlStr = sqlStr;
         return this;
