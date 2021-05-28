@@ -255,7 +255,7 @@ export function sortSelectSql(result: sqlObj = {}) {
 function sortArray(data: any[]) {
     const result = [];
     const item = Object.keys(data[0])
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
         for (let j = 0; j < item.length; j++) {
             if (!Object.keys(data[i]).includes(item[j])) {
                 item.splice(j, 1);

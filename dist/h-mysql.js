@@ -1,5 +1,5 @@
 /**
- * h-mysql v1.0.9
+ * h-mysql v1.0.10
  * (c) 2018-2021 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
@@ -249,7 +249,7 @@ function sortArray(data) {
   const result = [];
   const item = Object.keys(data[0]);
 
-  for (let i = 1; i < data.length; i++) {
+  for (let i = 0; i < data.length; i++) {
     for (let j = 0; j < item.length; j++) {
       if (!Object.keys(data[i]).includes(item[j])) {
         item.splice(j, 1);
