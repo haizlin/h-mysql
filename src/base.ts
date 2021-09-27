@@ -86,15 +86,15 @@ export default class Base {
                 let itemArr = item.split('=')
                 newData[itemArr[0]] = mysql.escape(itemArr[1])
             })
-        } else if(isType(data, 'object')) {
+        } else if (isType(data, 'object')) {
             newData = {};
-            for(let i in data){
+            for (let i in data) {
                 newData[i] = mysql.escape(data[i]);
             }
-        } else if(isType(data, 'array')){
+        } else if (isType(data, 'array')) {
             newData = [];
-            for(let i = 0; i < data.length; i++){
-                for(let j in data[i]){
+            for (let i = 0; i < data.length; i++) {
+                for (let j in data[i]) {
                     newData[i] = newData[i] ? newData[i] : {};
                     newData[i][j] = mysql.escape(data[i][j]);
                 }
@@ -116,7 +116,12 @@ export default class Base {
             opt = opt.join(',')
         }
 
-        this.sqlObj.order = `${orderby} ${opt}`
+        if (opt === '' || opt.length === 0 || opt === undefined) {
+            this.sqlObj.order = '';
+        } else {
+            this.sqlObj.order = `${orderby} ${opt}`
+        }
+
         return this
     }
 

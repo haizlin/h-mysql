@@ -85,7 +85,7 @@ export function checkType(opt: any, key?: string) {
 
     if (isType(opt, 'string')) {
         // opt = sqlstring.escape(opt.trim());
-        opt = opt.trim(); 
+        opt = opt.trim();
 
         result = opt.indexOf(key) > -1 && opt.match(/\+|-|\*|\/|%/) ? opt.slice(1, -1) : opt;
     } else if (isType(opt, 'boolean') || isType(opt, 'number')) {
@@ -94,7 +94,7 @@ export function checkType(opt: any, key?: string) {
         // result = sqlstring.escape(opt);
         if (isType(opt, 'string')) {
             result = opt.trim();
-        }else{
+        } else {
             result = opt;
         }
     }
@@ -205,8 +205,8 @@ export function expressionQuery(par_key: string, mark: string, value: any, _type
             result = `(${par_key} IS NULL )`
             break;
         case 'ISNOTNULL':
-                result = `(${par_key} IS NOT NULL )`
-                break;
+            result = `(${par_key} IS NOT NULL )`
+            break;
         default:
             result = `(${par_key}=${checkType(value)})`
     }
@@ -275,7 +275,12 @@ function sortArray(data: any[]) {
 // 处理insert批量插入data参数
 export function insertData(data: any) {
     if (!data) return '';
-    if (Array.isArray(data) && data.length === 1) data = data[0];
+    if (Array.isArray(data) && data.length === 0) {
+        return '';
+    }
+    if (Array.isArray(data) && data.length === 1) {
+        data = data[0];
+    }
 
     let keys = ''
     let values = ''
