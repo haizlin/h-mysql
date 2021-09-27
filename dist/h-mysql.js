@@ -1,5 +1,5 @@
 /**
- * h-mysql v1.0.10
+ * h-mysql v1.0.13
  * (c) 2018-2021 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
@@ -272,7 +272,15 @@ function sortArray(data) {
 
 function insertData(data) {
   if (!data) return '';
-  if (Array.isArray(data) && data.length === 1) data = data[0];
+
+  if (Array.isArray(data) && data.length === 0) {
+    return '';
+  }
+
+  if (Array.isArray(data) && data.length === 1) {
+    data = data[0];
+  }
+
   let keys = '';
   let values = '';
   let datastr = '';
@@ -665,7 +673,12 @@ class Base {
       opt = opt.join(',');
     }
 
-    this.sqlObj.order = `${orderby} ${opt}`;
+    if (opt === '' || opt.length === 0 || opt === undefined) {
+      this.sqlObj.order = '';
+    } else {
+      this.sqlObj.order = `${orderby} ${opt}`;
+    }
+
     return this;
   }
 

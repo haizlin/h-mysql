@@ -113,7 +113,7 @@ export default class Base {
         let orderby: string = 'ORDER BY'
 
         if (typeof (opt) === 'object') {
-            opt = opt.join(',')
+            opt = opt.join(',') 
         }
 
         if (opt === '' || opt.length === 0 || opt === undefined) {
