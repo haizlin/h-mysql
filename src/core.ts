@@ -52,7 +52,7 @@ export default class Core {
         let _this = this;
         let sqlstring: string = '';
         let isSingle = this.sqlObj.queryType === 'find'; // 是否是单条
-        let isCount = this.sqlObj.field && this.sqlObj.field.indexOf('COUNT') > -1 && this.sqlObj.queryType === 'find';  // 是否为count
+        let isCount = this.sqlObj.field && this.sqlObj.field.toUpperCase().indexOf('COUNT') > -1 && this.sqlObj.queryType === 'find';  // 是否为count
 
         if (this instanceof Core) {
             sqlstring = this.sqlObj.sqlStr;
@@ -120,7 +120,7 @@ export default class Core {
                         }
 
                         if (isCount) {
-                            r = result[0]['total'] || 0;
+                            r = (result[0] && result[0]['total']) || 0;
                         }
                         
                         resolve({ error: err, result: r });

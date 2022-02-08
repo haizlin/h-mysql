@@ -1,6 +1,6 @@
 /**
- * h-mysql v1.0.13
- * (c) 2018-2021 haizlin https://github.com/haizlin/h-mysql
+ * h-mysql v1.0.14
+ * (c) 2018-2022 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
  */
@@ -480,7 +480,7 @@ class Core {
 
     let sqlstring = '';
     let isSingle = this.sqlObj.queryType === 'find';
-    let isCount = this.sqlObj.field && this.sqlObj.field.indexOf('COUNT') > -1 && this.sqlObj.queryType === 'find';
+    let isCount = this.sqlObj.field && this.sqlObj.field.toUpperCase().indexOf('COUNT') > -1 && this.sqlObj.queryType === 'find';
 
     if (this instanceof Core) {
       sqlstring = this.sqlObj.sqlStr;
@@ -525,7 +525,7 @@ class Core {
             }
 
             if (isCount) {
-              r = result[0]['total'] || 0;
+              r = result[0] && result[0]['total'] || 0;
             }
 
             resolve({
