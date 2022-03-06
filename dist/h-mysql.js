@@ -1,5 +1,5 @@
 /**
- * h-mysql v1.0.15
+ * h-mysql v1.0.16
  * (c) 2018-2022 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
@@ -502,6 +502,8 @@ class Core {
         return false;
       }
 
+      let pre_time = new Date().getTime();
+
       _this.connection.getConnection((err, connection) => {
         if (err) {
           console.log('mysql error:', err);
@@ -509,8 +511,14 @@ class Core {
           return;
         }
 
+        let connect_time = new Date().getTime();
         connection.query(sqlstring, (error, result, fields) => {
           connection.release();
+          let post_time = new Date().getTime();
+          let duration_1 = connect_time - pre_time;
+          let duration_2 = post_time - connect_time;
+          let duration_3 = post_time - pre_time;
+          console.log(formatDate('YYYY-mm-dd HH:MM:SS', new Date()) + ' | ' + `${duration_1}ms-${duration_2}ms-${duration_3}ms` + ' | ', sqlstring);
 
           if (error) {
             reject(error);

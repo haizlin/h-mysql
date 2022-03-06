@@ -95,7 +95,7 @@ export default class Core {
 
             //     if (!_this.config.isPool && !type) _this.connection.end();
             // });
-
+            let pre_time = new Date().getTime();
             _this.connection.getConnection((err, connection) => {
                 if(err){
                     console.log('mysql error:', err)
@@ -103,10 +103,19 @@ export default class Core {
                     return;
                 }
 
+                let connect_time = new Date().getTime();
                 connection.query(sqlstring, (error: any, result: any, fields: any) => {
                     // _this.connection.releaseConnection(connection); // 释放连接
                     connection.release();
                     // connection.releaseConnection(); // 释放连接
+
+                    let post_time = new Date().getTime();
+                    let duration_1 = connect_time - pre_time; // 连接时间
+                    let duration_2 = post_time - connect_time; // 查询时间
+                    let duration_3 = post_time - pre_time; // 总时间
+                    
+                    console.log(formatDate('YYYY-mm-dd HH:MM:SS', new Date()) + ' | ' + `${duration_1}ms-${duration_2}ms-${duration_3}ms` + ' | ', sqlstring);
+
                     if (error) {
                         reject(error);
                     } else {
