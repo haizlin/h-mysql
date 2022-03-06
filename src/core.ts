@@ -56,8 +56,6 @@ export default class Core {
 
         if (this instanceof Core) {
             sqlstring = this.sqlObj.sqlStr;
-            console.log(formatDate('YYYY-mm-dd HH:MM:SS', new Date()) + ' |', this.sqlObj.sqlStr);
-
             this.tempObj = this.config.isDebug ? this.sqlObj : {};
         }
 
