@@ -116,8 +116,13 @@ export default class Curd {
         this.sqlObj.queryType = 'insert';
         let newData = this.sqlObj.data || {};
         const datastr = insertData(newData);
+
+        if (!datastr) {
+            return this;
+        }
+
         let result = `INSERT INTO ${this.sqlObj.table} ${datastr}`
-        
+
         this.sqlObj.sqlStr = result;
         return this;
     }
@@ -132,7 +137,7 @@ export default class Curd {
         }
 
         this.sqlObj.queryType = 'delete';
-        let order = this.sqlObj.order ? this.sqlObj.order : ''; 
+        let order = this.sqlObj.order ? this.sqlObj.order : '';
         let limit = this.sqlObj.limit ? this.sqlObj.limit : '';
 
         let result = `DELETE FROM ${this.sqlObj.table} WHERE ${this.sqlObj.where} ${order} ${limit}`
