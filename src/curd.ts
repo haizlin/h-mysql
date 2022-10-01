@@ -101,6 +101,10 @@ export default class Curd {
         keys.forEach((item, index) => {
             datastr += `${item}=${checkType(newData[item], item)}` + ((index === keys.length - 1) ? ' ' : ',');
         })
+		
+		if(!datastr){
+			throw new Error('无更新的数据！')
+		}
 
         result = `UPDATE ${this.sqlObj.table} SET ${datastr} WHERE ${this.sqlObj.where}`
         // const sqlStr = result.replace(/'/g, '\'').replace(/`/g, '\'');

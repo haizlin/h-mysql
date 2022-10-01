@@ -1,5 +1,5 @@
 /**
- * h-mysql v1.0.16
+ * h-mysql v1.0.19
  * (c) 2018-2022 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
@@ -886,6 +886,11 @@ class Curd {
     keys.forEach((item, index) => {
       datastr += `${item}=${checkType(newData[item], item)}` + (index === keys.length - 1 ? ' ' : ',');
     });
+
+    if (!datastr) {
+      throw new Error('无更新的数据！');
+    }
+
     result = `UPDATE ${this.sqlObj.table} SET ${datastr} WHERE ${this.sqlObj.where}`;
     this.sqlObj.sqlStr = result;
     return this;
@@ -895,6 +900,11 @@ class Curd {
     this.sqlObj.queryType = 'insert';
     let newData = this.sqlObj.data || {};
     const datastr = insertData(newData);
+
+    if (!datastr) {
+      return this;
+    }
+
     let result = `INSERT INTO ${this.sqlObj.table} ${datastr}`;
     this.sqlObj.sqlStr = result;
     return this;
