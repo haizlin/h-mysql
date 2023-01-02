@@ -87,16 +87,13 @@ export function checkType(opt: any, key?: string) {
         // opt = sqlstring.escape(opt.trim());
         opt = opt.trim();
 
-        result = opt.indexOf(key) > -1 && opt.match(/\+|-|\*|\/|%/) ? opt.slice(1, -1) : opt;
+        // result = opt.indexOf(key) > -1 && opt.match(/\+|-|\*|\/|%/) ? opt.slice(1, -1) : opt;
+        result = opt;
     } else if (isType(opt, 'boolean') || isType(opt, 'number')) {
         result = opt
     } else {
         // result = sqlstring.escape(opt);
-        if (isType(opt, 'string')) {
-            result = opt.trim();
-        } else {
-            result = opt;
-        }
+        result = opt;
     }
 
     return result
