@@ -1,6 +1,6 @@
 /**
- * h-mysql v1.0.19
- * (c) 2018-2022 haizlin https://github.com/haizlin/h-mysql
+ * h-mysql v1.0.21
+ * (c) 2018-2023 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
  */
@@ -87,15 +87,11 @@ function checkType(opt, key) {
 
   if (isType(opt, 'string')) {
     opt = opt.trim();
-    result = opt.indexOf(key) > -1 && opt.match(/\+|-|\*|\/|%/) ? opt.slice(1, -1) : opt;
+    result = opt;
   } else if (isType(opt, 'boolean') || isType(opt, 'number')) {
     result = opt;
   } else {
-    if (isType(opt, 'string')) {
-      result = opt.trim();
-    } else {
-      result = opt;
-    }
+    result = opt;
   }
 
   return result;
@@ -884,7 +880,7 @@ class Curd {
 
     let keys = Object.keys(newData);
     keys.forEach((item, index) => {
-      datastr += `${item}=${checkType(newData[item], item)}` + (index === keys.length - 1 ? ' ' : ',');
+      datastr += `${item}=${checkType(newData[item])}` + (index === keys.length - 1 ? ' ' : ',');
     });
 
     if (!datastr) {
