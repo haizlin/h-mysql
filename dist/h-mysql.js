@@ -1,13 +1,13 @@
 /**
- * h-mysql v1.0.21
- * (c) 2018-2023 haizlin https://github.com/haizlin/h-mysql
+ * h-mysql v1.0.22
+ * (c) 2018-2024 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
  */
 
 'use strict';
 
-const mysql = require('mysql');
+const mysql$2 = require('mysql');
 
 function formatDate(fmt, date) {
   let ret;
@@ -43,7 +43,7 @@ function getWhereToString(opt) {
       if (isType(opt[item], 'object')) {
         result += `${checkObjType(item, opt[item])}` + (index === keys.length - 1 - number ? ' ' : ` ${_type} `);
       } else {
-        result += `${item}=${mysql.escape(checkType(opt[item]))}` + (index === keys.length - 1 - number ? ' ' : ` ${_type} `);
+        result += `${item}=${mysql$2.escape(checkType(opt[item]))}` + (index === keys.length - 1 - number ? ' ' : ` ${_type} `);
       }
     });
   } else if (isType(opt, 'array')) {
@@ -71,7 +71,7 @@ function getWhereToString(opt) {
           if (isType(item[chi_item], 'object')) {
             result1 = `${checkObjType(chi_item, item[chi_item])}`;
           } else {
-            result1 = `${chi_item}=${mysql.escape(checkType(item[chi_item]))} `;
+            result1 = `${chi_item}=${mysql$2.escape(checkType(item[chi_item]))} `;
           }
         }
       });
@@ -400,7 +400,7 @@ function _formatFieldsName(field, tableAlias, tableName) {
     } else if (item.indexOf('.') > -1) {
       fieldName += item + comm;
     } else {
-      fieldName += (table ? table + '.' + _formatFields(item) : item) + comm;
+      fieldName += (tableAlias ? table + '.' + _formatFields(item) : item) + comm;
     }
   }
 
@@ -584,7 +584,7 @@ class Core {
 
 }
 
-const mysql$2 = require('mysql');
+const mysql = require('mysql');
 
 class Base {
   constructor(config) {
@@ -630,7 +630,7 @@ class Base {
     let result = '';
 
     if (typeof opt === 'string') {
-      result = mysql$2.escape(opt);
+      result = mysql.escape(opt);
     } else {
       result = getWhereToString(opt);
     }
@@ -646,13 +646,13 @@ class Base {
       let arr = data.split('&');
       arr.forEach(item => {
         let itemArr = item.split('=');
-        newData[itemArr[0]] = mysql$2.escape(itemArr[1]);
+        newData[itemArr[0]] = mysql.escape(itemArr[1]);
       });
     } else if (isType(data, 'object')) {
       newData = {};
 
       for (let i in data) {
-        newData[i] = mysql$2.escape(data[i]);
+        newData[i] = mysql.escape(data[i]);
       }
     } else if (isType(data, 'array')) {
       newData = [];
@@ -660,7 +660,7 @@ class Base {
       for (let i = 0; i < data.length; i++) {
         for (let j in data[i]) {
           newData[i] = newData[i] ? newData[i] : {};
-          newData[i][j] = mysql$2.escape(data[i][j]);
+          newData[i][j] = mysql.escape(data[i][j]);
         }
       }
     }

@@ -453,7 +453,7 @@ export function _formatFieldsName(field: string | any[], tableAlias: string, tab
         } else if (item.indexOf('.') > -1) {
             fieldName += item + comm;
         } else {
-            fieldName += (table ? (table + '.' + _formatFields(item)) : item) + comm;
+            fieldName += (tableAlias ? (table + '.' + _formatFields(item)) : item) + comm;
         }
     }
 

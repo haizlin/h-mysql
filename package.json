@@ -25,7 +25,9 @@
   },
   "homepage": "https://github.com/haizlin/h-mysql",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "rollup-plugin-banner": "^0.2.1"
+  },
   "devDependencies": {
     "@babel/core": "^7.4.5",
     "@babel/preset-env": "^7.4.5",
