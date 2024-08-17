@@ -1,5 +1,5 @@
 /**
- * h-mysql v1.0.22
+ * h-mysql v1.0.24
  * (c) 2018-2024 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
@@ -290,7 +290,7 @@ function insertData(data) {
 
       for (let key in data[i]) {
         let v = checkType(data[i][key]);
-        items = items ? `${items},${v}` : `${v}`;
+        items = items ? `${items},${v || "''"}` : `${v || "''"}`;
       }
 
       values += `(${items}),`;
@@ -301,7 +301,7 @@ function insertData(data) {
     for (let key in data) {
       let v = checkType(data[key]);
       keys = keys ? `${keys},\`${key}\`` : `\`${key}\``;
-      values = values ? `${values}, ${v}` : `${v}`;
+      values = values ? `${values}, ${v || "''"}` : `${v || "''"}`;
     }
 
     values = `(${values})`;
