@@ -99,7 +99,8 @@ export default class Curd {
         // }
 
         keys.forEach((item, index) => {
-            datastr += `${item}=${checkType(newData[item], item)}` + ((index === keys.length - 1) ? ' ' : ',');
+			let value = checkType(newData[item], item);
+            datastr += `${item}=${value}` + ((index === keys.length - 1) ? ' ' : ',');
         })
 		
 		if(!datastr){

@@ -880,7 +880,8 @@ class Curd {
 
     let keys = Object.keys(newData);
     keys.forEach((item, index) => {
-      datastr += `${item}=${checkType(newData[item])}` + (index === keys.length - 1 ? ' ' : ',');
+      let value = checkType(newData[item]);
+      datastr += `${item}=${value}` + (index === keys.length - 1 ? ' ' : ',');
     });
 
     if (!datastr) {
