@@ -292,7 +292,7 @@ export function insertData(data: any) {
             let items = ''
             for (let key in data[i]) {
                 let v = checkType(data[i][key])
-                items = items ? `${items},${v}` : `${v}`
+                items = items ? `${items},${v || "''"}` : `${v || "''"}`
             }
             values += `(${items}),`
         }
@@ -302,7 +302,7 @@ export function insertData(data: any) {
             let v = checkType(data[key]);
 
             keys = keys ? `${keys},\`${key}\`` : `\`${key}\``
-            values = values ? `${values}, ${v}` : `${v}`
+            values = values ? `${values}, ${v || "''"}` : `${v || "''"}`
         }
         values = `(${values})`;
     }
