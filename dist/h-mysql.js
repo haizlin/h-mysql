@@ -1,5 +1,5 @@
 /**
- * h-mysql v1.0.24
+ * h-mysql v1.0.25
  * (c) 2018-2024 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
@@ -65,7 +65,7 @@ function getWhereToString(opt) {
           if (isType(item[chi_item], 'object')) {
             result1 += `${_type} ${checkObjType(chi_item, item[chi_item])}`;
           } else {
-            result1 += `${_type} ${chi_item}=${checkType(item[chi_item])} `;
+            result1 += `${_type} ${chi_item}=${mysql$2.escape(checkType(item[chi_item]))} `;
           }
         } else {
           if (isType(item[chi_item], 'object')) {
