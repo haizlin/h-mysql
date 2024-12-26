@@ -58,7 +58,7 @@ export function getWhereToString(opt: any) {
                     if (isType(item[chi_item], 'object')) {
                         result1 += `${_type} ${checkObjType(chi_item, item[chi_item])}`
                     } else {
-                        result1 += `${_type} ${chi_item}=${checkType(item[chi_item])} `
+                        result1 += `${_type} ${chi_item}=${mysql.escape(checkType(item[chi_item]))} `
                     }
                 } else {
                     if (isType(item[chi_item], 'object')) {
