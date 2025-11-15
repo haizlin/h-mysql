@@ -1,6 +1,6 @@
 import { conf, sqlObj, tempObj } from './type/interface';
 import { formatDate } from './uitl';
-const mysql = require('mysql');
+const mysql = require('mysql2');
 
 export default class Core {
     connection: any = null;

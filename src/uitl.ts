@@ -1,6 +1,6 @@
 import sqlstring from 'sqlstring'
 import { sqlObj } from './type/interface';
-const mysql = require('mysql');
+const mysql = require('mysql2');
 
 // 时间格式化
 export function formatDate(fmt: string, date: any) {

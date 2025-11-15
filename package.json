@@ -10,7 +10,7 @@
     "build": "rollup -c ./build/rollup.bundle.config.js"
   },
   "keywords": [
-    "mysql",
+    "mysql2",
     "h-mysql",
     "node-mysql",
     "mysql thinkphp"
@@ -26,6 +26,7 @@
   "homepage": "https://github.com/haizlin/h-mysql",
   "license": "MIT",
   "dependencies": {
+    "mysql2": "^3.15.3",
     "rollup-plugin-banner": "^0.2.1"
   },
   "devDependencies": {

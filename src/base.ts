@@ -1,6 +1,6 @@
 import { getWhereToString, formatJoin, isType } from './uitl.js'
 import { conf, sqlObj } from './type/interface';
-const mysql = require('mysql');
+const mysql = require('mysql2');
 
 export default class Base {
     config: conf;
