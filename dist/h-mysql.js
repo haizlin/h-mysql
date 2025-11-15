@@ -1,13 +1,13 @@
 /**
- * h-mysql v1.0.25
- * (c) 2018-2024 haizlin https://github.com/haizlin/h-mysql
+ * h-mysql v1.0.27
+ * (c) 2018-2025 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
  */
 
 'use strict';
 
-const mysql$2 = require('mysql');
+const mysql$2 = require('mysql2');
 
 function formatDate(fmt, date) {
   let ret;
@@ -447,7 +447,7 @@ function formatJoin(join, tableAlias, tableName) {
   return joinStr;
 }
 
-const mysql$1 = require('mysql');
+const mysql$1 = require('mysql2');
 
 class Core {
   constructor(config) {
@@ -584,7 +584,7 @@ class Core {
 
 }
 
-const mysql = require('mysql');
+const mysql = require('mysql2');
 
 class Base {
   constructor(config) {
