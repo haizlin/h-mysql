@@ -1,5 +1,5 @@
 /**
- * h-mysql v1.0.27
+ * h-mysql v1.0.29
  * (c) 2018-2025 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
@@ -9,26 +9,157 @@
 
 const mysql$2 = require('mysql2');
 
-function formatDate(fmt, date) {
-  let ret;
-  const opt = {
-    "Y+": date.getFullYear().toString(),
-    "m+": (date.getMonth() + 1).toString(),
-    "d+": date.getDate().toString(),
-    "H+": date.getHours().toString(),
-    "M+": date.getMinutes().toString(),
-    "S+": date.getSeconds().toString()
-  };
+class Core {
+  constructor(config) {
+    this.connection = null;
+    this.sqlObj = {};
+    this.tempObj = {};
+    this.config = config;
+    this.connect();
+  }
 
-  for (let k in opt) {
-    ret = new RegExp("(" + k + ")").exec(fmt);
+  connect() {
+    let conf = this.config;
 
-    if (ret) {
-      fmt = fmt.replace(ret[1], ret[1].length == 1 ? opt[k] : opt[k].padStart(ret[1].length, "0"));
+    if (conf.isPool) {
+      this.connection = mysql$2.createPool(conf);
+      this.poolEvent();
+    } else {
+      this.connection = mysql$2.createConnection(conf);
     }
   }
-  return fmt;
+
+  poolEvent() {}
+
+  async execSql(ctx, isDebug = false) {
+    let _this = this;
+
+    let sqlstring = '';
+    let isSingle = this.sqlObj.queryType === 'find';
+    let isCount = this.sqlObj.field && this.sqlObj.field.toUpperCase().indexOf('COUNT(') > -1 && this.sqlObj.queryType === 'find';
+
+    if (this instanceof Core) {
+      sqlstring = this.sqlObj.sqlStr;
+      this.tempObj = this.config.isDebug ? this.sqlObj : {};
+    }
+
+    if (isDebug) {
+      return {
+        error: 0,
+        result: this.tempObj
+      };
+    }
+
+    this.sqlObj = {};
+    return new Promise((resolve, reject) => {
+      if (!_this.connection) {
+        reject('请先初始化mysql');
+        return false;
+      }
+
+      let pre_time = new Date().getTime();
+
+      _this.connection.getConnection((err, connection) => {
+        if (err) {
+          console.log('mysql error:', err);
+          resolve(err);
+          return;
+        }
+
+        let connect_time = new Date().getTime();
+        connection.query(sqlstring, (error, result, fields) => {
+          connection.release();
+          let post_time = new Date().getTime();
+          let duration_1 = connect_time - pre_time;
+          let duration_2 = post_time - connect_time;
+          let duration_3 = post_time - pre_time;
+
+          if (ctx && ctx.perfStats) {
+            ctx.perfStats.dbQueries += 1;
+            ctx.perfStats.dbDuration += duration_3;
+          }
+
+          let logInfo = {
+            type: '[SQL Exec]',
+            traceId: ctx.traceId || '',
+            '@timestamp': new Date().toISOString(),
+            connectMs: duration_1,
+            queryMs: duration_2,
+            totalMs: duration_3,
+            sql: sqlstring.trim()
+          };
+          console.log(JSON.stringify(logInfo));
+
+          if (error) {
+            reject(error);
+          } else {
+            let r;
+            let err = error === null ? 0 : error;
+
+            if (isSingle) {
+              r = result.length > 0 ? result[0] : {};
+            } else {
+              r = result;
+            }
+
+            if (isCount) {
+              r = result[0] && result[0]['total'] || 0;
+            }
+
+            resolve({
+              error: err,
+              result: r
+            });
+          }
+        });
+      });
+    });
+  }
+
+  async transaction(sqlstringArr = []) {
+    let _this = this;
+
+    return new Promise(async function (resolve, reject) {
+      if (!_this.connection) {
+        reject('请先初始化mysql');
+        return false;
+      }
+
+      if (!sqlstringArr || !sqlstringArr.length) {
+        reject('The parameter is empty.');
+        return false;
+      }
+
+      await _this.execSql('start transaction;', true);
+      let resuarr = [];
+
+      for (let i = 0, len = sqlstringArr.length; i < len; i++) {
+        try {
+          let result = await _this.execSql(sqlstringArr[i], true);
+          resuarr.push(result);
+        } catch (err) {
+          await _this.execSql('rollback;', true);
+          if (!_this.config.isPool) _this.connection.end();
+          reject(err);
+          return;
+        }
+      }
+
+      if (resuarr.length == sqlstringArr.length) {
+        await _this.execSql('commit;', true);
+        if (!_this.config.isPool) _this.connection.end();
+        resolve(resuarr);
+      } else {
+        await _this.execSql('rollback;', true);
+        if (!_this.config.isPool) _this.connection.end();
+        reject(resuarr);
+      }
+    });
+  }
+
 }
+
+const mysql$1 = require('mysql2');
 function getWhereToString(opt) {
   let result = '';
 
@@ -43,7 +174,7 @@ function getWhereToString(opt) {
       if (isType(opt[item], 'object')) {
         result += `${checkObjType(item, opt[item])}` + (index === keys.length - 1 - number ? ' ' : ` ${_type} `);
       } else {
-        result += `${item}=${mysql$2.escape(checkType(opt[item]))}` + (index === keys.length - 1 - number ? ' ' : ` ${_type} `);
+        result += `${item}=${mysql$1.escape(checkType(opt[item]))}` + (index === keys.length - 1 - number ? ' ' : ` ${_type} `);
       }
     });
   } else if (isType(opt, 'array')) {
@@ -65,13 +196,13 @@ function getWhereToString(opt) {
           if (isType(item[chi_item], 'object')) {
             result1 += `${_type} ${checkObjType(chi_item, item[chi_item])}`;
           } else {
-            result1 += `${_type} ${chi_item}=${mysql$2.escape(checkType(item[chi_item]))} `;
+            result1 += `${_type} ${chi_item}=${mysql$1.escape(checkType(item[chi_item]))} `;
           }
         } else {
           if (isType(item[chi_item], 'object')) {
             result1 = `${checkObjType(chi_item, item[chi_item])}`;
           } else {
-            result1 = `${chi_item}=${mysql$2.escape(checkType(item[chi_item]))} `;
+            result1 = `${chi_item}=${mysql$1.escape(checkType(item[chi_item]))} `;
           }
         }
       });
@@ -445,143 +576,6 @@ function formatJoin(join, tableAlias, tableName) {
   }
 
   return joinStr;
-}
-
-const mysql$1 = require('mysql2');
-
-class Core {
-  constructor(config) {
-    this.connection = null;
-    this.sqlObj = {};
-    this.tempObj = {};
-    this.config = config;
-    this.connect();
-  }
-
-  connect() {
-    let conf = this.config;
-
-    if (conf.isPool) {
-      this.connection = mysql$1.createPool(conf);
-      this.poolEvent();
-    } else {
-      this.connection = mysql$1.createConnection(conf);
-    }
-  }
-
-  poolEvent() {}
-
-  async execSql(isDebug = false, type = false) {
-    let _this = this;
-
-    let sqlstring = '';
-    let isSingle = this.sqlObj.queryType === 'find';
-    let isCount = this.sqlObj.field && this.sqlObj.field.toUpperCase().indexOf('COUNT(') > -1 && this.sqlObj.queryType === 'find';
-
-    if (this instanceof Core) {
-      sqlstring = this.sqlObj.sqlStr;
-      this.tempObj = this.config.isDebug ? this.sqlObj : {};
-    }
-
-    if (isDebug) {
-      return {
-        error: 0,
-        result: this.tempObj
-      };
-    }
-
-    this.sqlObj = {};
-    return new Promise((resolve, reject) => {
-      if (!_this.connection) {
-        reject('请先初始化mysql');
-        return false;
-      }
-
-      let pre_time = new Date().getTime();
-
-      _this.connection.getConnection((err, connection) => {
-        if (err) {
-          console.log('mysql error:', err);
-          resolve(err);
-          return;
-        }
-
-        let connect_time = new Date().getTime();
-        connection.query(sqlstring, (error, result, fields) => {
-          connection.release();
-          let post_time = new Date().getTime();
-          let duration_1 = connect_time - pre_time;
-          let duration_2 = post_time - connect_time;
-          let duration_3 = post_time - pre_time;
-          console.log(formatDate('YYYY-mm-dd HH:MM:SS', new Date()) + ' | ' + `${duration_1}ms-${duration_2}ms-${duration_3}ms` + ' | ', sqlstring);
-
-          if (error) {
-            reject(error);
-          } else {
-            let r;
-            let err = error === null ? 0 : error;
-
-            if (isSingle) {
-              r = result.length > 0 ? result[0] : {};
-            } else {
-              r = result;
-            }
-
-            if (isCount) {
-              r = result[0] && result[0]['total'] || 0;
-            }
-
-            resolve({
-              error: err,
-              result: r
-            });
-          }
-        });
-      });
-    });
-  }
-
-  async transaction(sqlstringArr = []) {
-    let _this = this;
-
-    return new Promise(async function (resolve, reject) {
-      if (!_this.connection) {
-        reject('请先初始化mysql');
-        return false;
-      }
-
-      if (!sqlstringArr || !sqlstringArr.length) {
-        reject('The parameter is empty.');
-        return false;
-      }
-
-      await _this.execSql('start transaction;', true);
-      let resuarr = [];
-
-      for (let i = 0, len = sqlstringArr.length; i < len; i++) {
-        try {
-          let result = await _this.execSql(sqlstringArr[i], true);
-          resuarr.push(result);
-        } catch (err) {
-          await _this.execSql('rollback;', true);
-          if (!_this.config.isPool) _this.connection.end();
-          reject(err);
-          return;
-        }
-      }
-
-      if (resuarr.length == sqlstringArr.length) {
-        await _this.execSql('commit;', true);
-        if (!_this.config.isPool) _this.connection.end();
-        resolve(resuarr);
-      } else {
-        await _this.execSql('rollback;', true);
-        if (!_this.config.isPool) _this.connection.end();
-        reject(resuarr);
-      }
-    });
-  }
-
 }
 
 const mysql = require('mysql2');
