@@ -47,7 +47,7 @@ export default class Core {
         // });
     }
 
-    async execSql(isDebug: boolean = false, type: boolean = false) {
+    async execSql(ctx: any, isDebug = false) {
         
         let _this = this;
         let sqlstring: string = '';
@@ -70,29 +70,7 @@ export default class Core {
                 reject('请先初始化mysql');
                 return false;
             }
-
-            // _this.connection.query(sqlstring, (error: any, result: any, fields: any) => {
-            //     if (error) {
-            //         reject(error);
-            //     } else {
-            //         let r: any;
-            //         let err: any = error === null ? 0 : error;
-
-            //         if (isSingle) {
-            //             r = result.length > 0 ? result[0] : {};
-            //         } else {
-            //             r = result;
-            //         }
-
-            //         if (isCount) {
-            //             r = result[0]['total'] || 0;
-            //         }
-
-            //         resolve({ error: err, result: r });
-            //     }
-
-            //     if (!_this.config.isPool && !type) _this.connection.end();
-            // });
+           
             let pre_time = new Date().getTime();
             _this.connection.getConnection((err, connection) => {
                 if(err){
@@ -112,7 +90,25 @@ export default class Core {
                     let duration_2 = post_time - connect_time; // 查询时间
                     let duration_3 = post_time - pre_time; // 总时间
                     
-                    console.log(formatDate('YYYY-mm-dd HH:MM:SS', new Date()) + ' | ' + `${duration_1}ms-${duration_2}ms-${duration_3}ms` + ' | ', sqlstring);
+                    // console.log(formatDate('YYYY-mm-dd HH:MM:SS', new Date()) + ' | ' + `${duration_1}ms-${duration_2}ms-${duration_3}ms` + ' | ', sqlstring);
+                
+                    // 累加数据库性能统计
+                    if (ctx && ctx.perfStats) {
+                        ctx.perfStats.dbQueries += 1;
+                        ctx.perfStats.dbDuration += duration_3;
+                    }
+
+                    let logInfo = {
+                        type: '[SQL Exec]',
+                        traceId: ctx.traceId || '',
+                        // '@timestamp': formatDate('YYYY-mm-dd HH:MM:SS', new Date()),
+                        '@timestamp': new Date().toISOString(), // 使用 ISO 8601 格式的 UTC 时间
+                        connectMs: duration_1, // 获取连接耗时
+                        queryMs: duration_2,   // SQL执行耗时
+                        totalMs: duration_3,   // 总耗时
+                        sql: sqlstring.trim()
+                    };
+                    console.log(JSON.stringify(logInfo));
 
                     if (error) {
                         reject(error);
