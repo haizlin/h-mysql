@@ -100,12 +100,11 @@ export default class Core {
 
                     let logInfo = {
                         type: '[SQL Exec]',
-                        traceId: ctx.traceId || '',
-                        // '@timestamp': formatDate('YYYY-mm-dd HH:MM:SS', new Date()),
-                        '@timestamp': new Date().toISOString(), // 使用 ISO 8601 格式的 UTC 时间
-                        connectMs: duration_1, // 获取连接耗时
-                        queryMs: duration_2,   // SQL执行耗时
-                        totalMs: duration_3,   // 总耗时
+                        traceId: (ctx && ctx.traceId) ? ctx.traceId : '',
+                        '@timestamp': new Date().toISOString(),
+                        connectMs: duration_1,
+                        queryMs: duration_2,
+                        totalMs: duration_3,
                         sql: sqlstring.trim()
                     };
                     console.log(JSON.stringify(logInfo));
