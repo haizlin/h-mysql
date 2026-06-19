@@ -48,5 +48,10 @@
     "sqlstring": "^2.3.1",
     "tslib": "^1.9.3",
     "typescript": "^3.7.4"
+  },
+  "overrides": {
+    "rollup-plugin-banner": {
+      "lodash.template": "4.5.0"
+    }
   }
 }

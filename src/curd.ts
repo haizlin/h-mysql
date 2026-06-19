@@ -100,14 +100,14 @@ export default class Curd {
 
         keys.forEach((item, index) => {
 			let value = checkType(newData[item], item);
-            datastr += `${item}=${value}` + ((index === keys.length - 1) ? ' ' : ',');
+            datastr += `\`${item}\`=${value}` + ((index === keys.length - 1) ? ' ' : ',');
         })
 		
 		if(!datastr){
 			throw new Error('无更新的数据！')
 		}
 
-        result = `UPDATE ${this.sqlObj.table} SET ${datastr} WHERE ${this.sqlObj.where}`
+        result = `UPDATE \`${this.sqlObj.table}\` SET ${datastr} WHERE ${this.sqlObj.where}`
         // const sqlStr = result.replace(/'/g, '\'').replace(/`/g, '\'');
         // const sqlStr = result.replace(/'/g, '\'');
         this.sqlObj.sqlStr = result;
@@ -126,7 +126,7 @@ export default class Curd {
             return this;
         }
 
-        let result = `INSERT INTO ${this.sqlObj.table} ${datastr}`
+        let result = `INSERT INTO \`${this.sqlObj.table}\` ${datastr}`
 
         this.sqlObj.sqlStr = result;
         return this;
@@ -145,7 +145,7 @@ export default class Curd {
         let order = this.sqlObj.order ? this.sqlObj.order : '';
         let limit = this.sqlObj.limit ? this.sqlObj.limit : '';
 
-        let result = `DELETE FROM ${this.sqlObj.table} WHERE ${this.sqlObj.where} ${order} ${limit}`
+        let result = `DELETE FROM \`${this.sqlObj.table}\` WHERE ${this.sqlObj.where} ${order} ${limit}`
         const sqlStr = result.replace(/'/g, '\'')
         this.sqlObj.sqlStr = sqlStr;
         return this;

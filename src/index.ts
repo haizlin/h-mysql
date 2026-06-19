@@ -15,7 +15,7 @@ function getConfig(config:conf){
         database: 'test',
         
         // pool
-        acquireTimeout: 10000,
+        connectTimeout: 10000,
         waitForConnections: true,  
         connectionLimit: 10,  
         queueLimit: 0, 

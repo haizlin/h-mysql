@@ -1,5 +1,4 @@
 import { conf, sqlObj, tempObj } from './type/interface';
-import { formatDate } from './uitl';
 const mysql = require('mysql2');
 
 export default class Core {
@@ -17,15 +16,15 @@ export default class Core {
      * 数据库连接
      */
     connect() {
-        
-        let conf = this.config;
+        // 分离自定义配置，只把 mysql2 认识的连接配置传给 createPool/createConnection
+        const { isPool, isDebug, defaultSqlPre, ...dbConfig } = this.config;
 
-        if (conf.isPool) {
-            this.connection = mysql.createPool(conf);
+        if (isPool) {
+            this.connection = mysql.createPool(dbConfig);
 
             this.poolEvent();
         } else {
-            this.connection = mysql.createConnection(conf);
+            this.connection = mysql.createConnection(dbConfig);
         }
     }
 

@@ -6,7 +6,7 @@ export interface conf {
     password: string,
     database: string,
     
-    acquireTimeout?: number,
+    connectTimeout?: number, // 连接超时(ms)
     waitForConnections?: boolean, //是否等待链接  
     connectionLimit?: number, // 连接池数
     queueLimit?: number,  // 排队限制 

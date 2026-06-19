@@ -39,7 +39,7 @@ export function getWhereToString(opt: any) {
             if (isType(opt[item], 'object')) {
                 result += `${checkObjType(item, opt[item])}` + ((index === keys.length - 1 - number) ? ' ' : ` ${_type} `);
             } else {
-                result += `${item}=${mysql.escape(checkType(opt[item]))}` + ((index === keys.length - 1 - number) ? ' ' : ` ${_type} `)
+                result += `${_escapeField(item)}=${mysql.escape(checkType(opt[item]))}` + ((index === keys.length - 1 - number) ? ' ' : ` ${_type} `)
             }
         })
     } else if (isType(opt, 'array')) {
@@ -58,13 +58,13 @@ export function getWhereToString(opt: any) {
                     if (isType(item[chi_item], 'object')) {
                         result1 += `${_type} ${checkObjType(chi_item, item[chi_item])}`
                     } else {
-                        result1 += `${_type} ${chi_item}=${mysql.escape(checkType(item[chi_item]))} `
+                        result1 += `${_type} ${_escapeField(chi_item)}=${mysql.escape(checkType(item[chi_item]))} `
                     }
                 } else {
                     if (isType(item[chi_item], 'object')) {
                         result1 = `${checkObjType(chi_item, item[chi_item])}`
                     } else {
-                        result1 = `${chi_item}=${mysql.escape(checkType(item[chi_item]))} `
+                        result1 = `${_escapeField(chi_item)}=${mysql.escape(checkType(item[chi_item]))} `
                     }
                 }
             })
@@ -120,7 +120,7 @@ export function checkObjType(pre_key: string, val: any) {
             )
         })
     } else {
-        result = `${pre_key}=${val}`
+        result = `${_escapeField(pre_key)}=${val}`
     }
     return `(${result}) `
 }
@@ -129,38 +129,39 @@ export function checkObjType(pre_key: string, val: any) {
 export function expressionQuery(par_key: string, mark: string, value: any, _type: string, isLastOne: boolean) {
     let result = '';
     let str: string = '';
+    let key: string = _escapeField(par_key);
 
     switch (mark.toUpperCase()) {
         case 'EQ':
-            result = `(${par_key}='${checkType(value)}')`
-            break;
+        result = `(${key}='${checkType(value)}')`;
+        break;
         case 'NEQ':
-            result = `(${par_key}<>'${checkType(value)}')`
-            break;
+        result = `(${key}<>'${checkType(value)}')`;
+        break;
         case 'GT':
-            result = `(${par_key}>'${checkType(value)}')`
-            break;
+        result = `(${key}>'${checkType(value)}')`;
+        break;
         case 'EGT':
-            result = `(${par_key}>='${checkType(value)}')`
-            break;
+        result = `(${key}>='${checkType(value)}')`;
+        break;
         case 'LT':
-            result = `(${par_key}<'${checkType(value)}')`
-            break;
+        result = `(${key}<'${checkType(value)}')`;
+        break;
         case 'ELT':
-            result = `(${par_key}<='${checkType(value)}')`
-            break;
+        result = `(${key}<='${checkType(value)}')`;
+        break;
         case 'LIKE':
-            result = `(${par_key} LIKE '${checkType(value)}')`
-            break;
+        result = `(${key} LIKE '${checkType(value)}')`;
+        break;
         case 'NOTLIKE':
-            result = `(${par_key} NOT LIKE '${checkType(value)}')`
-            break;
+        result = `(${key} NOT LIKE '${checkType(value)}')`;
+        break;
         case 'BETWEEN':
-            result = `(${par_key} BETWEEN ${value.replace(',', ' AND ')})`
-            break;
+        result = `(${key} BETWEEN ${value.replace(',', ' AND ')})`;
+        break;
         case 'NOTBETWEEN':
-            result = `(${par_key} NOT BETWEEN ${value.replace(',', ' AND ')})`
-            break;
+        result = `(${key} NOT BETWEEN ${value.replace(',', ' AND ')})`;
+        break;
         case 'IN':
             if (isType(value, 'array')) {
                 value.map((v, i) => {
@@ -171,7 +172,7 @@ export function expressionQuery(par_key: string, mark: string, value: any, _type
                 str = value;
             }
 
-            result = `(${par_key} IN (${str}))`
+            result = `(${key} IN (${str}))`;
             break;
 
         case 'NOTIN':
@@ -184,7 +185,7 @@ export function expressionQuery(par_key: string, mark: string, value: any, _type
                 str = value;
             }
 
-            result = `(${par_key} NOT IN (${str}))`
+            result = `(${key} NOT IN (${str}))`;
             break;
         case 'OR':
             if (isType(value, 'array')) {
@@ -196,16 +197,16 @@ export function expressionQuery(par_key: string, mark: string, value: any, _type
                 str = value;
             }
 
-            result = `(${par_key} OR (${str}))`
+            result = `(${key} OR (${str}))`;
             break;
         case 'ISNULL':
-            result = `(${par_key} IS NULL )`
+            result = `(${key} IS NULL )`;
             break;
         case 'ISNOTNULL':
-            result = `(${par_key} IS NOT NULL )`
+            result = `(${key} IS NOT NULL )`;
             break;
         default:
-            result = `(${par_key}=${checkType(value)})`
+            result = `(${key}=${checkType(value)})`;
     }
     return isLastOne ? `${result} ` : `${result} ${_type} `
 }
@@ -226,7 +227,7 @@ export function sortSelectSql(result: sqlObj = {}) {
         result.field = _formatFieldsName(result.field, result.alias, result.table);
     }
 
-    if (result.table) result.table = `FROM ${result.table}` + (result.alias ? ' AS ' : '');
+    if (result.table) result.table = `FROM \`${result.table}\`` + (result.alias ? ' AS ' : '');
     if (result.join) result.join = `${result.join}`
     if (result.where) result.where = `WHERE ${result.where}`
 
@@ -286,7 +287,7 @@ export function insertData(data: any) {
     if (Array.isArray(data)) {
         // array
         data = sortArray(data);
-        keys = Object.keys(data[0]).toString();
+        keys = Object.keys(data[0]).map(k => '`' + k + '`').toString();
 
         for (let i = 0; i < data.length; i++) {
             let items = ''
@@ -458,6 +459,14 @@ export function _formatFieldsName(field: string | any[], tableAlias: string, tab
     }
 
     return fieldName;
+}
+
+function _escapeField(name: string) {
+  if (typeof name !== 'string') return name;
+  if (name.indexOf('.') > -1) {
+    return name.split('.').map(p => '`' + p + '`').join('.');
+  }
+  return '`' + name + '`';
 }
 
 export function isEmptyObj(obj: object) {
