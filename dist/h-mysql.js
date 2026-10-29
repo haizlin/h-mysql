@@ -1,5 +1,5 @@
 /**
- * h-mysql v1.0.30
+ * h-mysql v1.0.33
  * (c) 2018-2026 haizlin https://github.com/haizlin/h-mysql
  * Licensed MIT
  * Released on: February 1, 2018
@@ -34,17 +34,37 @@ class Core {
   async execSql(ctx, isDebug = false) {
     let _this = this;
     let sqlstring = '';
+    let values = undefined;
     let isSingle = this.sqlObj.queryType === 'find';
     let isCount = this.sqlObj.field && this.sqlObj.field.toUpperCase().indexOf('COUNT(') > -1 && this.sqlObj.queryType === 'find';
     if (this instanceof Core) {
       sqlstring = this.sqlObj.sqlStr;
-      this.tempObj = this.config.isDebug ? this.sqlObj : {};
+      if (this.sqlObj.usePlaceholder && Array.isArray(this.sqlObj.values)) {
+        values = this.sqlObj.values;
+      }
     }
     if (isDebug) {
       return {
         error: 0,
         result: this.tempObj
       };
+    }
+    if (typeof sqlstring === 'string' && sqlstring.length > 0) {
+      let placeholderCount = this._countPlaceholders(sqlstring);
+      if (placeholderCount > 0) {
+        if (!values || values.length === 0) {
+          let err = new Error('[h-mysql] SQL 包含 ' + placeholderCount + ' 个 ? 占位符，但没有提供 values 参数。\n' + '请使用 query(sql, [values]) 形式，或将占位符值用 mysql.escape() 内联。\n' + 'SQL: ' + sqlstring);
+          throw err;
+        }
+        if (values.length !== placeholderCount) {
+          let err = new Error('[h-mysql] SQL 中 ? 占位符个数(' + placeholderCount + ') 与 values 长度(' + values.length + ') 不匹配。\n' + 'SQL: ' + sqlstring);
+          throw err;
+        }
+      }
+      if (this._containsNamedPlaceholder(sqlstring)) {
+        let err = new Error('[h-mysql] 不支持命名占位符 (:name) 语法。h-mysql 的设计是所有值通过 mysql.escape() 内联或 ? 占位符处理。\n' + '如有 JSON 字符串含 :xxx 误识别，请改用 mysql.escape() 转义后再拼接。\n' + 'SQL: ' + sqlstring);
+        throw err;
+      }
     }
     this.sqlObj = {};
     return new Promise((resolve, reject) => {
@@ -56,11 +76,11 @@ class Core {
       _this.connection.getConnection((err, connection) => {
         if (err) {
           console.log('mysql error:', err);
-          resolve(err);
+          reject(err);
           return;
         }
         let connect_time = new Date().getTime();
-        connection.query(sqlstring, (error, result, fields) => {
+        let queryCallback = (error, result, fields) => {
           connection.release();
           let post_time = new Date().getTime();
           let duration_1 = connect_time - pre_time;
@@ -77,7 +97,8 @@ class Core {
             connectMs: duration_1,
             queryMs: duration_2,
             totalMs: duration_3,
-            sql: sqlstring.trim()
+            sql: sqlstring.trim(),
+            values: values ? '[' + values.length + ' params]' : undefined
           };
           console.log(JSON.stringify(logInfo));
           if (error) {
@@ -98,11 +119,177 @@ class Core {
               result: r
             });
           }
+        };
+        if (values && values.length > 0) {
+          connection.query(sqlstring, values, queryCallback);
+        } else {
+          connection.query(sqlstring, queryCallback);
+        }
+      });
+    });
+  }
+  _countPlaceholders(sql) {
+    let count = 0;
+    let len = sql.length;
+    let i = 0;
+    let inSingleQuote = false;
+    let inDoubleQuote = false;
+    let inBacktick = false;
+    while (i < len) {
+      let ch = sql[i];
+      if (ch === '\\' && (inSingleQuote || inDoubleQuote)) {
+        i += 2;
+        continue;
+      }
+      if (!inDoubleQuote && !inBacktick && ch === "'") {
+        inSingleQuote = !inSingleQuote;
+      } else if (!inSingleQuote && !inBacktick && ch === '"') {
+        inDoubleQuote = !inDoubleQuote;
+      } else if (!inSingleQuote && !inDoubleQuote && ch === '`') {
+        inBacktick = !inBacktick;
+      } else if (!inSingleQuote && !inDoubleQuote && !inBacktick && ch === '?') {
+        count++;
+      }
+      i++;
+    }
+    return count;
+  }
+  _containsNamedPlaceholder(sql) {
+    let len = sql.length;
+    let i = 0;
+    let inSingleQuote = false;
+    let inDoubleQuote = false;
+    let inBacktick = false;
+    while (i < len) {
+      let ch = sql[i];
+      if (ch === '\\' && (inSingleQuote || inDoubleQuote)) {
+        i += 2;
+        continue;
+      }
+      if (!inDoubleQuote && !inBacktick && ch === "'") {
+        inSingleQuote = !inSingleQuote;
+      } else if (!inSingleQuote && !inBacktick && ch === '"') {
+        inDoubleQuote = !inDoubleQuote;
+      } else if (!inSingleQuote && !inDoubleQuote && ch === '`') {
+        inBacktick = !inBacktick;
+      } else if (!inSingleQuote && !inDoubleQuote && !inBacktick && ch === ':') {
+        let next = sql[i + 1];
+        if (next && /[a-zA-Z_]/.test(next)) {
+          return true;
+        }
+      }
+      i++;
+    }
+    return false;
+  }
+  async transaction(arg = null) {
+    if (typeof arg === 'function') {
+      return this.transactByConnection(arg);
+    }
+    return this.transactionBySqlArr(arg);
+  }
+  transactByConnection(handler) {
+    let _this = this;
+    const transLog = (stage, extra = {}) => {
+      console.log(JSON.stringify(Object.assign({
+        type: '[SQL Trans]',
+        stage: stage,
+        '@timestamp': new Date().toISOString()
+      }, extra)));
+    };
+    return new Promise((resolve, reject) => {
+      if (!_this.connection) {
+        reject(new Error('请先初始化mysql'));
+        return;
+      }
+      const getConn = cb => {
+        if (_this.config.isPool) {
+          _this.connection.getConnection((err, conn) => cb(err, conn));
+        } else {
+          cb(null, _this.connection);
+        }
+      };
+      getConn((err, connection) => {
+        if (err) {
+          transLog('获取连接失败', {
+            error: String(err && err.message || err)
+          });
+          reject(err);
+          return;
+        }
+        let released = false;
+        const releaseConn = () => {
+          if (released || !_this.config.isPool) return;
+          released = true;
+          try {
+            connection.release();
+          } catch (e) {}
+        };
+        const tQuery = (sql, values) => new Promise((res, rej) => {
+          let preTime = new Date().getTime();
+          const queryCallback = (qErr, result) => {
+            console.log(JSON.stringify({
+              type: '[SQL Trans]',
+              stage: 'query',
+              '@timestamp': new Date().toISOString(),
+              queryMs: new Date().getTime() - preTime,
+              sql: String(sql || '').trim(),
+              values: values ? '[' + values.length + ' params]' : undefined,
+              error: qErr ? String(qErr && qErr.message || qErr) : undefined
+            }));
+            if (qErr) {
+              rej(qErr);
+            } else {
+              res(result);
+            }
+          };
+          if (values && values.length > 0) {
+            connection.query(sql, values, queryCallback);
+          } else {
+            connection.query(sql, queryCallback);
+          }
+        });
+        tQuery.query = tQuery;
+        connection.beginTransaction(txErr => {
+          if (txErr) {
+            transLog('开启事务失败', {
+              error: String(txErr && txErr.message || txErr)
+            });
+            releaseConn();
+            reject(txErr);
+            return;
+          }
+          (async () => {
+            try {
+              const result = await handler(tQuery, connection);
+              connection.commit(cErr => {
+                releaseConn();
+                if (cErr) {
+                  transLog('提交事务失败', {
+                    error: String(cErr && cErr.message || cErr)
+                  });
+                  reject(cErr);
+                } else {
+                  transLog('事务已提交');
+                  resolve(result);
+                }
+              });
+            } catch (e) {
+              transLog('执行失败并回滚', {
+                error: String(e && e.message || e),
+                stack: e && e.stack ? String(e.stack).split('\n').slice(0, 3).join(' | ') : undefined
+              });
+              connection.rollback(() => {
+                releaseConn();
+                reject(e);
+              });
+            }
+          })();
         });
       });
     });
   }
-  async transaction(sqlstringArr = []) {
+  async transactionBySqlArr(sqlstringArr = []) {
     let _this = this;
     return new Promise(async function (resolve, reject) {
       if (!_this.connection) {
@@ -765,9 +952,17 @@ class Curd {
     this.sqlObj.sqlStr = sqlStr;
     return this;
   }
-  query(opt) {
-    opt = opt ? opt : '';
-    this.sqlObj.sqlStr = opt;
+  query(sql, values) {
+    sql = sql ? sql : '';
+    if (values !== undefined) {
+      this.sqlObj.sqlStr = sql;
+      this.sqlObj.usePlaceholder = true;
+      this.sqlObj.values = Array.isArray(values) ? values : [values];
+    } else {
+      this.sqlObj.sqlStr = sql;
+      this.sqlObj.usePlaceholder = false;
+      this.sqlObj.values = undefined;
+    }
     return this;
   }
 }

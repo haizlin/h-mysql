@@ -45,7 +45,11 @@ export interface sqlObj {
     delete?: string,
     query?: string,
 
-    sqlStr?: string
+    sqlStr?: string,
+
+    // 扩展：query() 调用时如果传了 values 数组，启用 ? 占位符模式
+    usePlaceholder?: boolean,
+    values?: any[]
 }
 
 export interface tempObj extends sqlObj{}

@@ -153,13 +153,27 @@ export default class Curd {
 
     /**
      * 原生sql查询
-     * @param opt 
-     * query('SELECT * FROM test')
+     * @param sql 
+     * @param values 可选参数数组，按位置对应 sql 中的 ? 占位符
+     * @example
+     *   query('SELECT * FROM test')
+     *   query('SELECT * FROM test WHERE id=?', [10])
+     *   query('SELECT * FROM test WHERE id=? AND status=?', [10, 1])
      */
-    query(opt: string) {
-        opt = opt ? opt : '';
+    query(sql: string, values?: any[]) {
+        sql = sql ? sql : '';
 
-        this.sqlObj.sqlStr = opt;
+        // 如果传入 values 数组，则让 execSql 通过 mysql2 的 ? 占位符执行（不内联）
+        if (values !== undefined) {
+            // 用 /**H_VALUES**/ 标记，把 values 暂存在 sqlObj，execSql 里识别
+            this.sqlObj.sqlStr = sql;
+            this.sqlObj.usePlaceholder = true;
+            this.sqlObj.values = Array.isArray(values) ? values : [values];
+        } else {
+            this.sqlObj.sqlStr = sql;
+            this.sqlObj.usePlaceholder = false;
+            this.sqlObj.values = undefined;
+        }
         return this;
     }
 }
